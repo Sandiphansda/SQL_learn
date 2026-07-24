@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Mastery - Learn SQL from Easy to Advanced</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-brand">
+                <span class="logo">ðŸ—„ï¸</span>
+                <h1>SQL Mastery</h1>
+                <span class="tagline">Learn SQL from Easy to Advanced</span>
+            </div>
+            <div class="header-stats">
+                <div class="stat">
+                    <span class="stat-value" id="progressCount">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="totalLessons">16</span>
+                    <span class="stat-label">Lessons</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3>ðŸ“š Curriculum</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressBar"></div>
+                    </div>
+                </div>
+                <div class="lesson-list" id="lessonList">
+                    <!-- Populated by JS -->
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="content">
+                <!-- Lesson Panel -->
+                <section class="lesson-panel" id="lessonPanel">
+                    <div class="lesson-header">
+                        <div class="lesson-title-area">
+                            <span class="level-badge" id="levelBadge">Easy</span>
+                            <h2 id="lessonTitle">Select a lesson to begin</h2>
+                        </div>
+                        <div class="lesson-nav">
+                            <button class="btn btn-secondary" id="prevBtn" onclick="prevLesson()">â† Previous</button>
+                            <button class="btn btn-primary" id="nextBtn" onclick="nextLesson()">Next â†’</button>
+                        </div>
+                    </div>
+                    <div class="lesson-content" id="lessonContent">
+                        <div class="welcome-message">
+                            <h3>Welcome to SQL Mastery! ðŸŽ¯</h3>
+                            <p>Select a lesson from the sidebar to start learning SQL. Each lesson includes:</p>
+                            <ul>
+                                <li>ðŸ“– <strong>Theory</strong> - Concepts explained with examples</li>
+                                <li>ðŸŽ¯ <strong>Task</strong> - A hands-on challenge to solve</li>
+                                <li>ðŸ’» <strong>Playground</strong> - Write and run real SQL queries</li>
+                                <li>âœ… <strong>Validation</strong> - Check if your solution is correct</li>
+                            </ul>
+                            <p>Start with <strong>Easy</strong> lessons and work your way up to <strong>Advanced</strong>!</p>
+                        </div>
+                    </div>
+                    <div class="task-box" id="taskBox" style="display:none;">
+                        <div class="task-label">ðŸŽ¯ Your Task</div>
+                        <p id="taskText"></p>
+                    </div>
+                </section>
+
+                <!-- SQL Playground -->
+                <section class="playground">
+                    <div class="playground-toolbar">
+                        <div class="toolbar-left">
+                            <button class="btn btn-run" onclick="runQuery()">
+                                <span class="icon">â–¶</span> Run Query
+                            </button>
+                            <button class="btn btn-secondary" onclick="resetEditor()">
+                                <span class="icon">â†º</span> Reset
+                            </button>
+                            <button class="btn btn-hint" onclick="showHint()">
+                                <span class="icon">ðŸ’¡</span> Hint
+                            </button>
+                            <button class="btn btn-solution" onclick="showSolution()">
+                                <span class="icon">ðŸ”‘</span> Show Answer
+                            </button>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn btn-validate" onclick="validateSolution()">
+                                <span class="icon">âœ“</span> Check Answer
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="editor-container">
+                        <!-- Schema Panel -->
+                        <div class="schema-panel" id="schemaPanel">
+                            <div class="schema-header">
+                                <h4>ðŸ“‹ Database Schema</h4>
+                            </div>
+                            <div class="schema-content" id="schemaContent">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Editor & Results -->
+                        <div class="editor-results">
+                            <div class="editor-wrapper">
+                                <div class="editor-label">SQL Editor</div>
+                                <textarea 
+                                    id="sqlEditor" 
+                                    class="sql-editor" 
+                                    placeholder="-- Write your SQL query here...
+-- Example: SELECT * FROM employees;"
+                                    spellcheck="false"
+                                ></textarea>
+                            </div>
+                            <div class="results-wrapper">
+                                <div class="results-header">
+                                    <span class="results-label">Results</span>
+                                    <span class="results-info" id="resultsInfo"></span>
+                                </div>
+                                <div class="results-content" id="resultsContent">
+                                    <div class="empty-state">
+                                        <span class="empty-icon">ðŸ“Š</span>
+                                        <p>Run a query to see results</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal" id="hintModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>ðŸ’¡ Hint</h3>
+                <button class="modal-close" onclick="closeHint()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="hintText"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content success-modal">
+            <div class="modal-body">
+                <div class="success-icon">ðŸŽ‰</div>
+                <h3>Correct!</h3>
+                <p id="successMessage">Great job! You solved it correctly.</p>
+                <button class="btn btn-primary" onclick="closeSuccess()">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
