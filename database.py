@@ -1,0 +1,290 @@
+"""
+SQL Learning Platform - Database Module
+Creates and manages the SQLite database with sample data for learning SQL.
+"""
+import sqlite3
+import os
+
+DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'sql_learning.db')
+
+SCHEMA_SQL = """
+-- Drop existing tables
+DROP TABLE IF EXISTS employee_projects;
+DROP TABLE IF EXISTS projects;
+DROP TABLE IF EXISTS employees;
+DROP TABLE IF EXISTS departments;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS products;
+
+-- Departments table
+CREATE TABLE departments (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    location TEXT NOT NULL,
+    budget INTEGER NOT NULL,
+    founded_year INTEGER
+);
+
+-- Employees table
+CREATE TABLE employees (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE,
+    department TEXT NOT NULL,
+    salary INTEGER NOT NULL,
+    hire_date TEXT NOT NULL,
+    manager_id INTEGER,
+    age INTEGER,
+    FOREIGN KEY (manager_id) REFERENCES employees(id)
+);
+
+-- Projects table
+CREATE TABLE projects (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    dept_id INTEGER NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    status TEXT NOT NULL,
+    budget INTEGER,
+    FOREIGN KEY (dept_id) REFERENCES departments(id)
+);
+
+-- Employee-Projects junction table
+CREATE TABLE employee_projects (
+    emp_id INTEGER NOT NULL,
+    project_id INTEGER NOT NULL,
+    hours_worked INTEGER NOT NULL,
+    role TEXT,
+    PRIMARY KEY (emp_id, project_id),
+    FOREIGN KEY (emp_id) REFERENCES employees(id),
+    FOREIGN KEY (project_id) REFERENCES projects(id)
+);
+
+-- E-commerce tables for advanced queries
+CREATE TABLE customers (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE,
+    city TEXT,
+    country TEXT,
+    registration_date TEXT,
+    tier TEXT DEFAULT 'Bronze'
+);
+
+CREATE TABLE products (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT,
+    price REAL NOT NULL,
+    stock INTEGER DEFAULT 0
+);
+
+CREATE TABLE orders (
+    id INTEGER PRIMARY KEY,
+    customer_id INTEGER NOT NULL,
+    order_date TEXT NOT NULL,
+    total_amount REAL,
+    status TEXT DEFAULT 'Pending',
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+CREATE TABLE order_items (
+    id INTEGER PRIMARY KEY,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    unit_price REAL NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+"""
+
+INSERT_DATA_SQL = """
+-- Insert Departments
+INSERT INTO departments (id, name, location, budget, founded_year) VALUES
+(1, 'Engineering', 'Building A - Floor 3', 2500000, 2010),
+(2, 'Marketing', 'Building B - Floor 2', 900000, 2012),
+(3, 'Sales', 'Building C - Floor 1', 1500000, 2011),
+(4, 'HR', 'Building B - Floor 1', 450000, 2013),
+(5, 'Finance', 'Building A - Floor 2', 800000, 2014),
+(6, 'Operations', 'Building D - Floor 1', 600000, 2015);
+
+-- Insert Employees
+INSERT INTO employees (id, name, email, department, salary, hire_date, manager_id, age) VALUES
+(1, 'Alice Johnson', 'alice.j@company.com', 'Engineering', 125000, '2018-03-15', NULL, 42),
+(2, 'Bob Smith', 'bob.smith@company.com', 'Engineering', 88000, '2020-06-01', 1, 31),
+(3, 'Carol White', 'carol.w@company.com', 'Marketing', 72000, '2019-11-20', 5, 29),
+(4, 'David Brown', 'david.b@company.com', 'Engineering', 135000, '2017-02-10', 1, 38),
+(5, 'Eve Davis', 'eve.davis@company.com', 'Marketing', 95000, '2016-08-05', NULL, 45),
+(6, 'Frank Miller', 'frank.m@company.com', 'Sales', 78000, '2021-01-12', 7, 27),
+(7, 'Grace Wilson', 'grace.w@company.com', 'Sales', 115000, '2015-05-30', NULL, 41),
+(8, 'Henry Taylor', 'henry.t@company.com', 'HR', 65000, '2022-04-18', 9, 24),
+(9, 'Ivy Anderson', 'ivy.a@company.com', 'HR', 92000, '2019-09-22', NULL, 36),
+(10, 'Jack Thomas', 'jack.t@company.com', 'Engineering', 82000, '2021-07-14', 4, 26),
+(11, 'Karen Lee', 'karen.l@company.com', 'Finance', 105000, '2018-11-01', NULL, 39),
+(12, 'Leo Martinez', 'leo.m@company.com', 'Engineering', 95000, '2020-03-20', 4, 33),
+(13, 'Mia Garcia', 'mia.g@company.com', 'Sales', 68000, '2022-09-10', 7, 25),
+(14, 'Noah Robinson', 'noah.r@company.com', 'Marketing', 85000, '2020-12-01', 5, 30),
+(15, 'Olivia Clark', 'olivia.c@company.com', 'Finance', 78000, '2021-05-15', 11, 28),
+(16, 'Paul Lewis', 'paul.l@company.com', 'Operations', 72000, '2019-07-22', NULL, 34),
+(17, 'Quinn Walker', 'quinn.w@company.com', 'Engineering', 110000, '2019-01-10', 1, 37),
+(18, 'Rachel Hall', 'rachel.h@company.com', 'HR', 58000, '2023-02-14', 9, 23),
+(19, 'Sam Young', 'sam.y@company.com', 'Sales', 92000, '2018-08-30', 7, 35),
+(20, 'Tina King', 'tina.k@company.com', 'Marketing', 76000, '2021-10-05', 5, 27);
+
+-- Insert Projects
+INSERT INTO projects (id, name, dept_id, start_date, end_date, status, budget) VALUES
+(1, 'Website Redesign', 2, '2024-01-10', '2024-06-30', 'Completed', 150000),
+(2, 'Mobile App v2.0', 1, '2024-03-01', NULL, 'In Progress', 500000),
+(3, 'Cloud Migration', 1, '2024-02-15', '2024-08-20', 'In Progress', 800000),
+(4, 'Q3 Marketing Campaign', 2, '2024-07-01', NULL, 'Planned', 200000),
+(5, 'CRM Integration', 3, '2024-04-10', NULL, 'In Progress', 300000),
+(6, 'Employee Portal', 4, '2024-05-01', '2024-09-15', 'In Progress', 120000),
+(7, 'Budget Optimization', 5, '2024-06-01', '2024-10-30', 'In Progress', 80000),
+(8, 'AI Analytics Dashboard', 1, '2024-08-01', NULL, 'Planned', 600000),
+(9, 'Supply Chain Upgrade', 6, '2024-04-15', '2024-11-30', 'In Progress', 250000),
+(10, 'Security Audit', 1, '2024-01-20', '2024-04-30', 'Completed', 180000);
+
+-- Insert Employee Projects
+INSERT INTO employee_projects (emp_id, project_id, hours_worked, role) VALUES
+(1, 2, 180, 'Tech Lead'),
+(2, 2, 120, 'Developer'),
+(2, 3, 80, 'Developer'),
+(4, 3, 160, 'Architect'),
+(10, 2, 140, 'Developer'),
+(12, 3, 100, 'Developer'),
+(17, 2, 90, 'Senior Developer'),
+(17, 8, 40, 'Research Lead'),
+(3, 1, 200, 'Project Manager'),
+(5, 4, 60, 'Director'),
+(14, 1, 150, 'Designer'),
+(14, 4, 80, 'Content Lead'),
+(20, 4, 50, 'Analyst'),
+(6, 5, 110, 'Sales Engineer'),
+(7, 5, 40, 'Account Director'),
+(13, 5, 90, 'Support'),
+(19, 5, 70, 'Integration Specialist'),
+(8, 6, 130, 'UI Designer'),
+(9, 6, 60, 'Project Owner'),
+(18, 6, 40, 'Tester'),
+(11, 7, 100, 'Lead Analyst'),
+(15, 7, 80, 'Analyst'),
+(16, 9, 150, 'Operations Lead'),
+(1, 10, 50, 'Security Reviewer'),
+(4, 10, 60, 'Code Reviewer');
+
+-- Insert Customers
+INSERT INTO customers (id, name, email, city, country, registration_date, tier) VALUES
+(1, 'John Doe', 'john.doe@email.com', 'New York', 'USA', '2023-01-15', 'Gold'),
+(2, 'Jane Smith', 'jane.smith@email.com', 'London', 'UK', '2023-02-20', 'Silver'),
+(3, 'Robert Chen', 'robert.c@email.com', 'Singapore', 'Singapore', '2023-03-10', 'Bronze'),
+(4, 'Maria Garcia', 'maria.g@email.com', 'Madrid', 'Spain', '2023-04-05', 'Gold'),
+(5, 'Ahmed Hassan', 'ahmed.h@email.com', 'Cairo', 'Egypt', '2023-05-12', 'Silver'),
+(6, 'Sophie Martin', 'sophie.m@email.com', 'Paris', 'France', '2023-06-18', 'Bronze'),
+(7, 'James Wilson', 'james.w@email.com', 'Sydney', 'Australia', '2023-07-22', 'Gold'),
+(8, 'Yuki Tanaka', 'yuki.t@email.com', 'Tokyo', 'Japan', '2023-08-30', 'Silver'),
+(9, 'Elena Petrova', 'elena.p@email.com', 'Moscow', 'Russia', '2023-09-14', 'Bronze'),
+(10, 'Carlos Silva', 'carlos.s@email.com', 'Sao Paulo', 'Brazil', '2023-10-01', 'Gold'),
+(11, 'Emma Thompson', 'emma.t@email.com', 'Toronto', 'Canada', '2023-11-11', 'Silver'),
+(12, 'Liam O''Brien', 'liam.o@email.com', 'Dublin', 'Ireland', '2023-12-05', 'Bronze');
+
+-- Insert Products
+INSERT INTO products (id, name, category, price, stock) VALUES
+(1, 'Laptop Pro X1', 'Electronics', 1299.99, 45),
+(2, 'Wireless Mouse', 'Electronics', 29.99, 200),
+(3, 'USB-C Hub', 'Electronics', 59.99, 150),
+(4, 'Office Chair Ergo', 'Furniture', 349.99, 30),
+(5, 'Standing Desk', 'Furniture', 599.99, 20),
+(6, 'Monitor 27" 4K', 'Electronics', 449.99, 60),
+(7, 'Mechanical Keyboard', 'Electronics', 129.99, 80),
+(8, 'Webcam HD', 'Electronics', 79.99, 100),
+(9, 'Desk Lamp LED', 'Furniture', 39.99, 120),
+(10, 'Cable Management Kit', 'Accessories', 19.99, 300),
+(11, 'Laptop Stand', 'Accessories', 49.99, 90),
+(12, 'Noise Cancelling Headphones', 'Electronics', 249.99, 40);
+
+-- Insert Orders
+INSERT INTO orders (id, customer_id, order_date, total_amount, status) VALUES
+(1, 1, '2024-01-10', 1379.98, 'Delivered'),
+(2, 2, '2024-01-15', 349.99, 'Delivered'),
+(3, 1, '2024-02-01', 59.99, 'Delivered'),
+(4, 3, '2024-02-10', 1299.99, 'Shipped'),
+(5, 4, '2024-02-20', 599.99, 'Delivered'),
+(6, 5, '2024-03-05', 79.99, 'Delivered'),
+(7, 1, '2024-03-15', 449.99, 'Shipped'),
+(8, 6, '2024-03-20', 39.99, 'Delivered'),
+(9, 7, '2024-04-01', 1549.98, 'Processing'),
+(10, 8, '2024-04-10', 249.99, 'Delivered'),
+(11, 2, '2024-04-15', 129.99, 'Shipped'),
+(12, 9, '2024-04-20', 19.99, 'Delivered'),
+(13, 10, '2024-05-01', 699.98, 'Processing'),
+(14, 1, '2024-05-10', 29.99, 'Delivered'),
+(15, 11, '2024-05-15', 349.99, 'Shipped'),
+(16, 12, '2024-05-20', 59.99, 'Processing'),
+(17, 4, '2024-06-01', 1299.99, 'Delivered'),
+(18, 7, '2024-06-10', 79.99, 'Shipped'),
+(19, 3, '2024-06-15', 1549.98, 'Delivered'),
+(20, 5, '2024-06-20', 599.99, 'Processing');
+
+-- Insert Order Items
+INSERT INTO order_items (id, order_id, product_id, quantity, unit_price) VALUES
+(1, 1, 1, 1, 1299.99),
+(2, 1, 2, 1, 29.99),
+(3, 1, 10, 2, 19.99),
+(4, 2, 4, 1, 349.99),
+(5, 3, 3, 1, 59.99),
+(6, 4, 1, 1, 1299.99),
+(7, 5, 5, 1, 599.99),
+(8, 6, 8, 1, 79.99),
+(9, 7, 6, 1, 449.99),
+(10, 8, 9, 1, 39.99),
+(11, 9, 1, 1, 1299.99),
+(12, 9, 12, 1, 249.99),
+(13, 10, 12, 1, 249.99),
+(14, 11, 7, 1, 129.99),
+(15, 12, 10, 1, 19.99),
+(16, 13, 5, 1, 599.99),
+(17, 13, 11, 2, 49.99),
+(18, 14, 2, 1, 29.99),
+(19, 15, 4, 1, 349.99),
+(20, 16, 3, 1, 59.99),
+(21, 17, 1, 1, 1299.99),
+(22, 18, 8, 1, 79.99),
+(23, 19, 1, 1, 1299.99),
+(24, 19, 12, 1, 249.99),
+(25, 20, 5, 1, 599.99);
+"""
+
+def init_db():
+    """Initialize the database with schema and sample data."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    conn.executescript(SCHEMA_SQL)
+    conn.executescript(INSERT_DATA_SQL)
+    conn.commit()
+    conn.close()
+    print(f"Database initialized at {DATABASE_PATH}")
+
+def get_db_connection():
+    """Get a database connection with row factory."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def execute_query(query, params=()):
+    """Execute a SELECT query safely and return results."""
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute(query, params)
+        rows = cursor.fetchall()
+        columns = [description[0] for description in cursor.description] if cursor.description else []
+        return {"columns": columns, "rows": [dict(row) for row in rows], "error": None}
+    except sqlite3.Error as e:
+        return {"columns": [], "rows": [], "error": str(e)}
+    finally:
+        conn.close()
+
+if __name__ == "__main__":
+    init_db()
